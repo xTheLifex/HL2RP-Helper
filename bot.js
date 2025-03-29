@@ -69,7 +69,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 
 const SECONDS = 1000;
-const TICK_TIME = 2 * SECONDS;
+const TICK_TIME = 10 * SECONDS;
 const SCOREBOARD_DATA_PATH = "./scoreboardMessage.json"; // File to store message ID
 client.on(Events.ClientReady, async function () {
     OK("BOT", "Automatic tick started.");
@@ -99,7 +99,7 @@ client.on(Events.ClientReady, async function () {
 
     // If message doesn't exist (was deleted), create a new one
     if (!scoreboardMessage) {
-        scoreboardMessage = await channel.send("# Currently Online:");
+        scoreboardMessage = await channel.send("# Loading Player Count...");
         fs.writeFileSync(SCOREBOARD_DATA_PATH, JSON.stringify({ messageID: scoreboardMessage.id }));
     }
 
