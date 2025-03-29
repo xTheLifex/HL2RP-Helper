@@ -69,28 +69,65 @@ client.on(Events.InteractionCreate, async interaction => {
 
 
 const SECONDS = 1000;
-const TICK_TIME = 10 * SECONDS;
-client.on(Events.ClientReady, function () {
-    OK("BOT", "Automatic tick started.")
-    setInterval(async function () {
-        const channel = await client.channels.cache.get(config.playerCountChannelID);
-        if (!channel)
-        {
-            Err("Channel ID is invalid!")
-            return;
+const TICK_TIME = 2 * SECONDS;
+const SCOREBOARD_DATA_PATH = "./scoreboardMessage.json"; // File to store message ID
+client.on(Events.ClientReady, async function () {
+    OK("BOT", "Automatic tick started.");
+
+    const channel = await client.channels.fetch(config.playerCountChannelID).catch(() => null);
+    if (!channel) {
+        Err("Channel ID is invalid!");
+        return;
+    }
+
+    let messageID = null;
+
+    // Load message ID from file if it exists
+    if (fs.existsSync(SCOREBOARD_DATA_PATH)) {
+        try {
+            messageID = JSON.parse(fs.readFileSync(SCOREBOARD_DATA_PATH)).messageID;
+        } catch (error) {
+            Err("Failed to read scoreboardMessage.json");
         }
-        
-        await GameDig.query({
+    }
+
+    // Fetch the scoreboard message if it exists
+    let scoreboardMessage = null;
+    if (messageID) {
+        scoreboardMessage = await channel.messages.fetch(messageID).catch(() => null);
+    }
+
+    // If message doesn't exist (was deleted), create a new one
+    if (!scoreboardMessage) {
+        scoreboardMessage = await channel.send("# Currently Online:");
+        fs.writeFileSync(SCOREBOARD_DATA_PATH, JSON.stringify({ messageID: scoreboardMessage.id }));
+    }
+
+    // Start interval to update scoreboard
+    setInterval(async function () {
+        const state = await GameDig.query({
             type: "garrysmod",
             host: config.playerCountServerIP,
             port: config.playerCountServerPort
-        }).then((state) => {
-            channel.setName(`🌎-Players: ${state.numplayers}`);
-        }).catch((error) =>
-        {
-            Err("Server is offline or fetch has failed.")
-        })
-    }, TICK_TIME)
-})
+        }).catch(() => {
+            Err("Server is offline or fetch has failed.");
+            return null;
+        });
+
+        if (!state) return;
+
+        await channel.setName(`🌎-Players: ${state.numplayers}`);
+        let scoreboardText = `# ${state.name.replace()} \n` +
+            `**Current Map: ** \`\`${state.map || "Unknown"}\`\`\n` +
+            `**Players:** \`\`${state.numplayers} Online\`\`\n` +
+            `**IP:** \`\`${state.connect}\`\`\n\n` +
+            `Current Players:\n`;
+        scoreboardText += state.players.map(player => `- ${player.name || "Unknown"}`).join("\n");
+        
+        // Edit existing message
+        await scoreboardMessage.edit(scoreboardText);
+    }, TICK_TIME);
+});
+
 // Log in to Discord with your client's token
 client.login(config.token);
