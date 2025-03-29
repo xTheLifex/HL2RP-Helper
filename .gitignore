@@ -137,3 +137,6 @@ dist
 
 # Config and secrets
 config.json
+
+# Rider IDE
+.idea
