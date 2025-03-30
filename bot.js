@@ -68,8 +68,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 
-const SECONDS = 1000;
-const TICK_TIME = 10 * SECONDS;
+const TICK_TIME = 5000;
 const SCOREBOARD_DATA_PATH = "./scoreboardMessage.json"; // File to store message ID
 client.on(Events.ClientReady, async function () {
     OK("BOT", "Automatic tick started.");
