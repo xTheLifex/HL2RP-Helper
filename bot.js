@@ -5,6 +5,7 @@ const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const config = require('./config.json')
 const { GameDig } = require('gamedig');
 const pc = require('picocolors')
+const VERSION = 1;
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -71,7 +72,7 @@ client.on(Events.InteractionCreate, async interaction => {
 const TICK_TIME = 5000;
 const SCOREBOARD_DATA_PATH = "./scoreboardMessage.json"; // File to store message ID
 client.on(Events.ClientReady, async function () {
-    OK("BOT", "Automatic tick started.");
+    OK("BOT", "Automatic tick started. Bot version " + VERSION);
 
     const channel = await client.channels.fetch(config.playerCountChannelID).catch(() => null);
     if (!channel) {
@@ -126,6 +127,7 @@ client.on(Events.ClientReady, async function () {
         
         // Edit existing message
         await scoreboardMessage.edit(scoreboardText);
+        Info("Message Edited.")
     }, TICK_TIME);
 });
 
