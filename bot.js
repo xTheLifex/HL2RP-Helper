@@ -119,7 +119,8 @@ client.on(Events.ClientReady, async function () {
         let scoreboardText = `# ${state.name.replace()} \n` +
             `**Current Map: ** \`\`${state.map || "Unknown"}\`\`\n` +
             `**Players:** \`\`${state.numplayers} Online\`\`\n` +
-            `**IP:** \`\`${state.connect}\`\`\n\n` +
+            `**IP:** \`\`${state.connect}\`\`\n` +
+            `**Ping:** \`\`${state.ping}\`\`\n\n` +
             `Current Players:\n`;
         scoreboardText += state.players.map(player => `- ${player.name || "Unknown"}`).join("\n");
         
