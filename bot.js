@@ -72,7 +72,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 const TICK_TIME = 8000;
 const SCOREBOARD_DATA_PATH = "./scoreboardMessage.json"; // File to store message ID
-
+let lastPlayerCount = 0;
 async function fetchWithTimeout(promise, timeout = 5000) {
     return Promise.race([
         promise,
@@ -136,13 +136,17 @@ client.on(Events.ClientReady, async function () {
 
         if (!state) return;
 
-        try {
-            const newName = `🌎-Players: ${state.numplayers}`;
-            if (channel.name == newName) return;
-            await fetchWithTimeout(channel.setName(newName));
-        } catch (error) {
-            Err("Failed to update channel name: " + error.message);
+        if (state.numplayers !== lastPlayerCount)
+        {
+            try {
+                const newName = `🌎-Players-${state.numplayers}`;
+                await fetchWithTimeout(channel.setName(newName));
+                lastPlayerCount = state.numplayers;
+            } catch (error) {
+                Err("Failed to update channel name: " + error.message);
+            }
         }
+
 
         let scoreboardText = `# ${state.name.replace()} \n` +
             `**Current Map: ** \`\`${state.map || "Unknown"}\`\`\n` +
