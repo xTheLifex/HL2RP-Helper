@@ -11,10 +11,11 @@ const VERSION = 1;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 // Functions
-const Err = function (text) {console.log(pc.red("[ERROR] ") + text)}
-const Warn = function (text) {console.log(pc.yellowBright("[WARN] ") + pc.bgBlack(text))}
-const Info = function (text) {console.log(pc.blue("[INFO] ") + text)}
-const OK = function (header, text) {console.log(pc.green(`[${header}] `) + text)}
+const Log = function (text) { console.log(`[${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}] ${text}`)}
+const Err = function (text) {Log(pc.red("[ERROR] ") + text)}
+const Warn = function (text) {Log(pc.yellowBright("[WARN] ") + pc.bgBlack(text))}
+const Info = function (text) {Log(pc.blue("[INFO] ") + text)}
+const OK = function (header, text) {Log(pc.green(`[${header}] `) + text)}
 
 
 // Import commands
