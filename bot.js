@@ -70,14 +70,24 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 
-const TICK_TIME = 5000;
+const TICK_TIME = 8000;
 const SCOREBOARD_DATA_PATH = "./scoreboardMessage.json"; // File to store message ID
+
+async function fetchWithTimeout(promise, timeout = 5000) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out")), timeout))
+    ]);
+}
+
 client.on(Events.ClientReady, async function () {
     OK("BOT", "Automatic tick started. Bot version " + VERSION);
 
-    const channel = await client.channels.fetch(config.playerCountChannelID).catch(() => null);
-    if (!channel) {
-        Err("Channel ID is invalid!");
+    let channel;
+    try {
+        channel = await fetchWithTimeout(client.channels.fetch(config.playerCountChannelID));
+    } catch (error) {
+        Err("Channel fetch failed: " + error.message);
         return;
     }
 
@@ -95,13 +105,22 @@ client.on(Events.ClientReady, async function () {
     // Fetch the scoreboard message if it exists
     let scoreboardMessage = null;
     if (messageID) {
-        scoreboardMessage = await channel.messages.fetch(messageID).catch(() => null);
+        try {
+            scoreboardMessage = await fetchWithTimeout(channel.messages.fetch(messageID));
+        } catch {
+            scoreboardMessage = null;
+        }
     }
 
     // If message doesn't exist (was deleted), create a new one
     if (!scoreboardMessage) {
-        scoreboardMessage = await channel.send("# Loading Player Count...");
-        fs.writeFileSync(SCOREBOARD_DATA_PATH, JSON.stringify({ messageID: scoreboardMessage.id }));
+        try {
+            scoreboardMessage = await fetchWithTimeout(channel.send("# Loading Player Count..."));
+            fs.writeFileSync(SCOREBOARD_DATA_PATH, JSON.stringify({ messageID: scoreboardMessage.id }));
+        } catch (error) {
+            Err("Failed to send message: " + error.message);
+            return;
+        }
     }
 
     // Start interval to update scoreboard
@@ -117,7 +136,12 @@ client.on(Events.ClientReady, async function () {
 
         if (!state) return;
 
-        await channel.setName(`🌎-Players: ${state.numplayers}`);
+        try {
+            await fetchWithTimeout(channel.setName(`🌎-Players: ${state.numplayers}`));
+        } catch (error) {
+            Err("Failed to update channel name: " + error.message);
+        }
+
         let scoreboardText = `# ${state.name.replace()} \n` +
             `**Current Map: ** \`\`${state.map || "Unknown"}\`\`\n` +
             `**Players:** \`\`${state.numplayers} Online\`\`\n` +
@@ -125,10 +149,13 @@ client.on(Events.ClientReady, async function () {
             `**Ping:** \`\`${state.ping}\`\`\n\n` +
             `Current Players:\n`;
         scoreboardText += state.players.map(player => `- ${player.name || "Unknown"}`).join("\n");
-        
-        // Edit existing message
-        await scoreboardMessage.edit(scoreboardText);
-        Info("Message Edited.")
+
+        try {
+            await fetchWithTimeout(scoreboardMessage.edit(scoreboardText));
+            Info("Message Edited.");
+        } catch (error) {
+            Err("Failed to edit message: " + error.message);
+        }
     }, TICK_TIME);
 });
 
