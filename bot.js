@@ -167,3 +167,8 @@ client.on(Events.ClientReady, async function () {
 
 // Log in to Discord with your client's token
 client.login(config.token);
+
+client.on("rateLimit", (rateLimitInfo) => {
+    Warn(`Client -> is being rate limited. Timeout: ${rateLimitInfo.timeout}ms | Limit: ${rateLimitInfo.limit} | Method: ${rateLimitInfo.method}
+    Path: ${rateLimitInfo.path}`)
+})
