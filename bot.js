@@ -137,7 +137,9 @@ client.on(Events.ClientReady, async function () {
         if (!state) return;
 
         try {
-            await fetchWithTimeout(channel.setName(`🌎-Players: ${state.numplayers}`));
+            const newName = `🌎-Players: ${state.numplayers}`;
+            if (channel.name == newName) return;
+            await fetchWithTimeout(channel.setName(newName));
         } catch (error) {
             Err("Failed to update channel name: " + error.message);
         }
