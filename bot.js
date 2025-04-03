@@ -153,7 +153,7 @@ client.on(Events.ClientReady, async function () {
             `**IP:** \`\`${state.connect}\`\`\n` +
             `**Ping:** \`\`${state.ping}\`\`\n\n` +
             `Current Players:\n`;
-        scoreboardText += state.players.map(player => `- ${player.name || "Unknown"}`).join("\n");
+        scoreboardText += state.players.map(player => `- ${player.name || "*(Connecting...)*"}`).join("\n");
 
         try {
             await fetchWithTimeout(scoreboardMessage.edit(scoreboardText));
