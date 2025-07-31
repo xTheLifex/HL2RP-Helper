@@ -66,6 +66,7 @@ module.exports = {
 
         await interaction.reply({
             content: "",
+            tts: false,
             embeds: embeds
         });
     }
