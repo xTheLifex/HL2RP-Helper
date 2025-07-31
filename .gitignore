@@ -140,3 +140,4 @@ config.json
 
 # Rider IDE
 .idea
+/scoreboardMessage.json
