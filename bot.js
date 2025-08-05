@@ -94,7 +94,9 @@ client.on(Events.MessageCreate, async message => {
 
     if (!hasEmbed && !hasAttachment)
     {
-        await message.delete().catch(() => {});
+        await message.delete().catch((reason) => {
+            Err(reason)
+        });
         //
         // try {
         //     var response = await message.reply({
