@@ -1,14 +1,14 @@
 // Require the necessary discord.js classes
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlagsBitField } = require('discord.js');
 const config = require('./config.json')
 const { GameDig } = require('gamedig');
 const pc = require('picocolors')
 const VERSION = 1;
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 // Functions
 const Log = function (text) { console.log(`[${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}] ${text}`)}
@@ -82,7 +82,46 @@ async function fetchWithTimeout(promise, timeout = 5000) {
 
 client.on(Events.ClientReady, async function () {
     OK("BOT", "Automatic tick started. Bot version " + VERSION);
+    await HandleStatUpdater();
+});
 
+client.on(Events.MessageCreate, async message => {
+    if (message.channelId !== config.mediaChannelID) return;
+    if (message.author.bot) return;
+
+    const hasAttachment = message.attachments.size > 0;
+    const hasEmbed = message.embeds.some(embed => embed.image || embed.video);
+
+    if (!hasEmbed && !hasAttachment)
+    {
+        await message.delete().catch(() => {});
+        //
+        // try {
+        //     var response = await message.reply({
+        //         "content": "",
+        //         "embeds": [
+        //             {
+        //                 "id": 298008172,
+        //                 "description": "# This is a media-only channel! \nPlease upload an image or video of your own artwork.",
+        //                 "fields": [],
+        //                 "thumbnail": {
+        //                     "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/512px-Cross_red_circle.svg.png?20181021160952"
+        //                 },
+        //                 "color": 16711680
+        //             }
+        //         ],
+        //     });
+        //     await message.delete().catch(() => {});
+        //
+        //     setTimeout(() => { response.delete().catch(() => {}); }, 10000);
+        // } catch (err) {
+        //     console.error("Error handling non-media message:", err);
+        // }
+    }
+})
+
+async function HandleStatUpdater()
+{
     let channel;
     try {
         channel = await fetchWithTimeout(client.channels.fetch(config.playerCountChannelID));
@@ -162,7 +201,7 @@ client.on(Events.ClientReady, async function () {
             Err("Failed to edit message: " + error.message);
         }
     }, TICK_TIME);
-});
+}
 
 // Log in to Discord with your client's token
 client.login(config.token);
