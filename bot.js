@@ -94,31 +94,35 @@ client.on(Events.MessageCreate, async message => {
 
     if (!hasEmbed && !hasAttachment)
     {
-        await message.delete().catch((reason) => {
-            Err(reason)
-        });
-        //
-        // try {
-        //     var response = await message.reply({
-        //         "content": "",
-        //         "embeds": [
-        //             {
-        //                 "id": 298008172,
-        //                 "description": "# This is a media-only channel! \nPlease upload an image or video of your own artwork.",
-        //                 "fields": [],
-        //                 "thumbnail": {
-        //                     "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/512px-Cross_red_circle.svg.png?20181021160952"
-        //                 },
-        //                 "color": 16711680
-        //             }
-        //         ],
-        //     });
-        //     await message.delete().catch(() => {});
-        //
-        //     setTimeout(() => { response.delete().catch(() => {}); }, 10000);
-        // } catch (err) {
-        //     console.error("Error handling non-media message:", err);
-        // }
+        // await message.delete().catch((reason) => {
+        //     Err(reason)
+        // });
+
+        try {
+            var response = await message.reply({
+                "content": "",
+                "tts": false,
+                "embeds": [
+                    {
+                        "id": 298008172,
+                        "description": "# This is a media-only channel! \nPlease upload an image or video of your own artwork.",
+                        "fields": [],
+                        "thumbnail": {
+                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/512px-Cross_red_circle.svg.png?20181021160952"
+                        },
+                        "color": 16711680
+                    }
+                ],
+                "components": [],
+                "actions": {},
+                "flags": 0
+            });
+            await message.delete().catch(() => {});
+
+            setTimeout(() => { response.delete().catch(() => {}); }, 5000);
+        } catch (err) {
+            console.error("Error handling non-media message:", err);
+        }
     }
 })
 
